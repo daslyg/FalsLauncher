@@ -3,18 +3,17 @@
 // Used by FauxLauncher.rc
 //
 #define IDC_MYICON                      2
-#define IDD_FAUXLAUNCHER_DIALOG         102
+#define IDD_FALSLAUNCHER_DIALOG         102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
-#define IDC_FAUXLAUNCHER                109
+#define IDC_FALSLAUNCHER                109
 #define IDR_MAINFRAME                   128
-#define IDI_ICON1                       134
-#define IDI_ICON2                       135
-#define CF_CLIENT_WORLD_BACKUP          256
-#define CF_CLIENT_ASSETS_BACKUP         257
+#define IDI_FALSLAUNCHER                134
+#define IDI_SMALL                       135
 #define IDC_STATIC                      -1
+#define CF_CLIENT_WORLD_BACKUP			255
 
 // Next default values for new objects
 // 

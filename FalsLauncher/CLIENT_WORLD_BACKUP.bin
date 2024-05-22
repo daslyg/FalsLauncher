@@ -1,0 +1,128 @@
+@echo off
+setlocal enabledelayedexpansion
+
+:: Define directories
+set savedir=%APPDATA%\VintagestoryData\Saves
+echo Saves Directory: !savedir!
+
+set clientdir=%APPDATA%\VintagestoryData
+echo Client Directory: !clientdir!
+
+:: Define program paths
+set program=C:\Program Files\7-Zip\7z.exe
+echo Program Directory: !program!
+
+:: Define executable paths
+set vintagestory=%APPDATA%\Vintagestory\Vintagestory.exe
+set instanceName=Vintagestory.exe
+
+:: Define executablePath
+set /p executablePath=<executablePath.txt
+
+:: Set the asset backup zip folder's name
+set "assetszip=assets.zip"
+
+:: Check if directories exist
+if not exist "!savedir!" (
+    echo Error: Saves directory does not exist.
+    exit /b 1
+)
+
+if not exist "!program!" (
+    echo Error: 7-Zip program does not exist.
+    exit /b 1
+)
+
+:: Start Vintage Story
+echo Starting Vintage Story...
+start "" "!vintagestory!"
+timeout /t 3 >nul
+
+:main_loop
+:: Check if Vintage Story is running
+tasklist /fi "IMAGENAME eq !instanceName!" 2>NUL | find /I "!instanceName!" >NUL
+if "!ERRORLEVEL!"=="0" (
+    :wait_for_files
+    :: Wait for .vcdbs-wal or .vcdbs-shm files to appear
+    echo Checking for .vcdbs-wal or .vcdbs-shm files...
+    if exist "!savedir!\*.vcdbs-wal" (
+        for %%f in (!savedir!\*.vcdbs-wal) do (
+            set basefile=%%~nf
+            set file=!savedir!\%%~nxf
+            echo Found .vcdbs-wal file: !file!
+            goto process_file
+        )
+    ) else if exist "!savedir!\*.vcdbs-shm" (
+        for %%f in (!savedir!\*.vcdbs-shm) do (
+            set basefile=%%~nf
+            set file=!savedir!\%%~nxf
+            echo Found .vcdbs-shm file: !file!
+            goto process_file
+        )
+    ) else (
+        timeout /t 1 >nul
+        goto main_loop
+    )
+
+    :process_file
+    :: Wait for the files to disappear
+    echo Waiting for !file! to disappear...
+    :wait_for_files_to_disappear
+    if not exist "!file!" (
+        echo File !file! no longer exists.
+        
+        :: Backup the matching file
+        set matchfile=!savedir!\!basefile!.vcdbs
+        if exist "!matchfile!" (
+            echo Processing file: !matchfile!
+            :: Format date and time
+            for /f "tokens=2 delims==" %%a in ('wmic os get localdatetime /value 2^>NUL') do set datetime=%%a
+            if not defined datetime (
+                echo Error: Unable to retrieve datetime.
+                exit /b 1
+            )
+            set filename_date=!datetime:~0,4!-!datetime:~4,2!-!datetime:~6,2!
+            set filename_time=!datetime:~8,2!-!datetime:~10,2!-!datetime:~12,2!
+            set "zipfile=!basefile!_!filename_date!_!filename_time!.zip"
+            echo Running: "!program!" a -tzip "!zipfile!" "!matchfile!"
+            "!program!" a -tzip "!zipfile!" "!matchfile!"
+            copy /Y "!zipfile!" "!executablePath!\!zipfile!" >nul
+            if "!ERRORLEVEL!"=="0" (
+                echo World saved as !zipfile!
+            ) else (
+                echo Error: Failed to save world as !zipfile!
+            )
+        ) else (
+            echo Matching file !matchfile! does not exist.
+        )
+    ) else (
+        timeout /t 1 >nul
+        goto wait_for_files_to_disappear
+    )
+
+    :: Check again if Vintage Story is still running after backup
+    goto main_loop
+) else (
+    echo Vintagestory.exe is not running. Exiting.
+
+    :: Create the assets folder if it doesn't exist
+    if not exist "assets\" mkdir "assets"
+
+    :: Delete old zipfile before creating a new one
+    del "!assetszip!"
+
+    :: Add files to the zip archive
+    "!program!" a -tzip "!assetszip!" "!clientdir!\Mods"
+    "!program!" a -tzip "!assetszip!" "!clientdir!\*.json"
+    "!program!" a -tzip "!assetszip!" "!clientdir!\Logs"
+
+    :: Remove the assets folder after the zip file has been created
+    rd "assets"
+
+    copy /Y "!assetszip!" "!executablePath!\!assetszip!" >nul
+
+    exit /b
+)
+
+endlocal
+pause
