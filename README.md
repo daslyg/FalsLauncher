@@ -8,4 +8,4 @@ Requirements: Windows 11, Vintage Story, 7-Zip
 
 Downloads are available in the releases page.
 
-See also: [FauxLauncher (Minecraft)](https://github.com/daslyg/FauxLauncher){:target="_blank"}
+See also: [FauxLauncher (Minecraft)](https://github.com/daslyg/FauxLauncher)
