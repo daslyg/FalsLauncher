@@ -8,6 +8,6 @@ Can be used as a shortcut directly to Vintagestory.exe, when run, it will create
 Warning, .zips may be overwritten if they share the same name in your backup folder when the executable is run.
 
 ### **Requirements:**
-Windows 11, [Vintage Story](https://www.vintagestory.at/), [7-Zip](https://www.7-zip.org/)
+Windows 11, [Vintage Story](https://www.vintagestory.at/), [7-Zip](https://www.7-zip.org/)—(Only follow links you trust)
 
 Downloads are available in the releases page.
